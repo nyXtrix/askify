@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             console.log("No user signed in.");
             document.getElementById("askSection").style.display = "none"; // Hide the ask section if not logged in
-            
+            setupQuestionListener();
         }
     });
 });

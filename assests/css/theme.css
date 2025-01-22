@@ -1,0 +1,17 @@
+body.dark-theme {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+body.dark-theme .bg-white {
+    background-color: #333;
+    color: white;
+}
+
+body.dark-theme .text-primary {
+    color: #bb86fc;
+}
+
+body.dark-theme .text-muted {
+    color: #b0b0b0;
+}

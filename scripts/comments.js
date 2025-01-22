@@ -4,13 +4,13 @@ import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, addDoc
 
 // Firebase config
 const firebaseConfig = {
-    apiKey: "AIzaSyBql-S9mse5HsyDnzclvnSGI5kn3MjWArw",
-    authDomain: "like-tweet-38a79.firebaseapp.com",
-    projectId: "like-tweet-38a79",
-    storageBucket: "like-tweet-38a79.appspot.com",
-    messagingSenderId: "976222867265",
-    appId: "1:976222867265:web:4b0638a616a35c7e769bc0",
-    measurementId: "G-LB8CPH3480",
+    apiKey: "AIzaSyBQHh2-bc-PqCgxnxSz5ea9XD8WKUFmI60",
+    authDomain: "askify-4424d.firebaseapp.com",
+    projectId: "askify-4424d",
+    storageBucket: "askify-4424d.firebasestorage.app",
+    messagingSenderId: "37659707490",
+    appId: "1:37659707490:web:ef22a078102ce9cd0ca93b",
+    measurementId: "G-HEQ098XY8L"
 };
 
 // Initialize Firebase
@@ -31,22 +31,40 @@ const postCommentButton = document.getElementById("postCommentButton");
 
 // Fetch question details
 async function loadQuestionDetails() {
-    const questionRef = doc(db, "questions", questionId);
-    const questionSnap = await getDoc(questionRef);
+    try {
+        const questionRef = doc(db, "questions", questionId);
+        const questionSnap = await getDoc(questionRef);
 
-    if (questionSnap.exists()) {
-        const questionData = questionSnap.data();
+        if (questionSnap.exists()) {
+            const questionData = questionSnap.data();
 
-        questionDetailsDiv.innerHTML = `
-            <div class="question border p-3 rounded">
-                <p class="question-content mb-2">${questionData.question_content}</p>
-                <div class="d-flex justify-content-between">
-                    <span><i class="bi bi-heart-fill text-danger"></i> ${questionData.likes} Likes</span>
+            // Fetch username of the person who posted the question
+            const userRef = doc(db, "users", questionData.user_id);
+            const userSnap = await getDoc(userRef);
+            const username = userSnap.exists() ? userSnap.data().username : "Unknown User";
+
+            // Add description if it exists
+            let descriptionHTML = "";
+            if (questionData.description_content) {
+                descriptionHTML = `<p><strong>Description:</strong> ${questionData.description_content}</p>`;
+            }
+
+            questionDetailsDiv.innerHTML = `
+                <div class="question border p-3 rounded">
+                    <p><strong>Asked by: </strong>${username}</p>
+                    <p class="question-content mb-2"><strong>Question: </strong>${questionData.question_content}</p>
+                    ${descriptionHTML} <!-- Add description if available -->
+                    <div class="d-flex justify-content-between">
+                        <span><i class="bi bi-heart-fill text-danger"></i> ${questionData.likes} Likes</span>
+                    </div>
                 </div>
-            </div>
-        `;
-    } else {
-        questionDetailsDiv.innerHTML = `<div class="alert alert-danger">Question not found!</div>`;
+            `;
+        } else {
+            questionDetailsDiv.innerHTML = `<div class="alert alert-danger">Question not found!</div>`;
+        }
+    } catch (error) {
+        console.error("Error loading question details:", error);
+        questionDetailsDiv.innerHTML = `<div class="alert alert-danger">Failed to load question details. Please try again later.</div>`;
     }
 }
 
@@ -61,66 +79,74 @@ function loadComments() {
             const commentData = commentDoc.data();
             const commentId = commentDoc.id;
 
-            // Fetch username for the comment
-            const userRef = doc(db, "users", commentData.user_id);
-            const userSnap = await getDoc(userRef);
-            const username = userSnap.exists() ? userSnap.data().username : "Unknown User";
+            try {
+                // Fetch username for the comment
+                const userRef = doc(db, "users", commentData.user_id);
+                const userSnap = await getDoc(userRef);
+                const username = userSnap.exists() ? userSnap.data().username : "Unknown User";
 
-            const commentElement = document.createElement("div");
-            commentElement.classList.add("comment", "border", "p-2", "mb-2", "rounded");
+                const commentElement = document.createElement("div");
+                commentElement.classList.add("comment", "border", "p-2", "mb-2", "rounded");
 
-            commentElement.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="username">${username}</span>
-                    <button class="btn p-0 border-0 like-btn text-muted" data-comment-id="${commentId}">
-                        <i class="bi bi-heart fs-6"></i> <span>${commentData.likes || 0}</span>
-                    </button>
-                </div>
-                <p class="comment-content">${commentData.content}</p>
-            `;
+                commentElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="username">${username}</span>
+                        <button class="btn p-0 border-0 like-btn text-muted" data-comment-id="${commentId}">
+                            <i class="bi bi-heart fs-6"></i> <span>${commentData.likes || 0}</span>
+                        </button>
+                    </div>
+                    <p class="comment-content">${commentData.content}</p>
+                `;
 
-            commentsListDiv.appendChild(commentElement);
+                commentsListDiv.appendChild(commentElement);
 
-            // Handle like button for each comment
-            const likeButton = commentElement.querySelector(".like-btn");
-            const likeCountSpan = likeButton.querySelector("span");
+                // Handle like button for each comment
+                const likeButton = commentElement.querySelector(".like-btn");
+                const likeCountSpan = likeButton.querySelector("span");
 
-            likeButton.addEventListener("click", async () => {
-                const userId = auth.currentUser?.uid;
-                if (!userId) {
-                    alert("You must be logged in to like comments.");
-                    return;
-                }
+                likeButton.addEventListener("click", async () => {
+                    const userId = auth.currentUser?.uid;
+                    if (!userId) {
+                        alert("You must be logged in to like comments.");
+                        return;
+                    }
 
-                const likeRef = doc(db, "likes", `${commentId}_${userId}`);
-                const likeSnap = await getDoc(likeRef);
+                    try {
+                        const likeRef = doc(db, "likes", `${commentId}_${userId}`);
+                        const likeSnap = await getDoc(likeRef);
 
-                if (likeSnap.exists()) {
-                    // Unlike the comment
-                    await deleteDoc(likeRef);
+                        if (likeSnap.exists()) {
+                            // Unlike the comment
+                            await deleteDoc(likeRef);
 
-                    likeButton.querySelector("i").classList.remove("text-danger");
-                    likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1;
+                            likeButton.querySelector("i").classList.remove("text-danger");
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1;
 
-                    await updateDoc(doc(db, "comments", commentId), {
-                        likes: increment(-1),
-                    });
-                } else {
-                    // Like the comment
-                    await addDoc(likeRef, {
-                        user_id: userId,
-                        comment_id: commentId,
-                        createdAt: new Date().toISOString(),
-                    });
+                            await updateDoc(doc(db, "comments", commentId), {
+                                likes: increment(-1),
+                            });
+                        } else {
+                            // Like the comment
+                            await addDoc(likeRef, {
+                                user_id: userId,
+                                comment_id: commentId,
+                                createdAt: new Date().toISOString(),
+                            });
 
-                    likeButton.querySelector("i").classList.add("text-danger");
-                    likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1;
+                            likeButton.querySelector("i").classList.add("text-danger");
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1;
 
-                    await updateDoc(doc(db, "comments", commentId), {
-                        likes: increment(1),
-                    });
-                }
-            });
+                            await updateDoc(doc(db, "comments", commentId), {
+                                likes: increment(1),
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Error handling like:", error);
+                    }
+                });
+            } catch (error) {
+                console.error("Error loading comment user data:", error);
+            }
         }
     });
 }
@@ -141,15 +167,20 @@ postCommentButton.addEventListener("click", async () => {
         return;
     }
 
-    await addDoc(collection(db, "comments"), {
-        question_id: questionId,
-        user_id: userId,
-        content: content,
-        likes: 0,
-        createdAt: new Date().toISOString(),
-    });
+    try {
+        await addDoc(collection(db, "comments"), {
+            question_id: questionId,
+            user_id: userId,
+            content: content,
+            likes: 0,
+            createdAt: new Date().toISOString(),
+        });
 
-    commentInput.value = ""; // Clear input field
+        commentInput.value = ""; // Clear input field
+    } catch (error) {
+        console.error("Error posting comment:", error);
+        alert("There was an error posting your comment. Please try again.");
+    }
 });
 
 // Check auth state to enable or disable comment input

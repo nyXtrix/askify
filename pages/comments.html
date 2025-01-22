@@ -6,16 +6,95 @@
     <title>Comments</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+    <style>
+        .section-heading {
+            font-size: 1.75rem;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .question {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 5px solid #007bff;
+        }
+
+        .question-content {
+            font-size: 1.25rem;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .comment {
+            background-color: #f7f7f7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment .username {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .comment .comment-content {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .comment .like-btn {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .comment .like-btn:hover {
+            color: #dc3545;
+        }
+
+        #addCommentSection {
+            margin-top: 30px;
+        }
+
+        .comment textarea {
+            resize: none;
+        }
+
+        #postCommentButton {
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
-        <div id="questionDetails" class="mb-4"></div>
-        <div id="commentsList" class="mb-4"></div>
-        <div id="addCommentSection" class="d-none">
-            <textarea id="commentInput" class="form-control mb-2" rows="3" placeholder="Add a comment..."></textarea>
-            <button id="postCommentButton" class="btn btn-primary">Post Comment</button>
+        <!-- Question Section -->
+        <h2 class="section-heading">Question</h2>
+        <div id="questionDetails">
+           
+            <!-- The question will be dynamically inserted here -->
+        </div>
+
+        <!-- Comments Section -->
+        <h3 class="section-heading">Comments</h3>
+        <div id="commentsList">
+         
+            <!-- The comments will be dynamically inserted here -->
+        </div>
+
+        <!-- Add Comment Section (Visible only when user is logged in) -->
+        <div id="addCommentSection" class="d-none mb-4">
+            <textarea id="commentInput" class="form-control" rows="4" placeholder="Write a comment..."></textarea>
+            <button id="postCommentButton" class="btn btn-primary mt-2">Post Comment</button>
         </div>
     </div>
+
     <script type="module" src="../scripts/comments.js" defer></script>
 </body>
 </html>

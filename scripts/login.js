@@ -1,17 +1,17 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener("DOMContentLoaded", function () {
     // Initialize Firebase
     const firebaseConfig = {
-        apiKey: "AIzaSyBql-S9mse5HsyDnzclvnSGI5kn3MjWArw", // Replace with your actual API key
-        authDomain: "like-tweet-38a79.firebaseapp.com",
-        projectId: "like-tweet-38a79",
-        storageBucket: "like-tweet-38a79.appspot.com",
-        messagingSenderId: "976222867265",
-        appId: "1:976222867265:web:4b0638a616a35c7e769bc0",
-        measurementId: "G-LB8CPH3480"
+        apiKey: "AIzaSyBQHh2-bc-PqCgxnxSz5ea9XD8WKUFmI60",
+        authDomain: "askify-4424d.firebaseapp.com",
+        projectId: "askify-4424d",
+        storageBucket: "askify-4424d.firebasestorage.app",
+        messagingSenderId: "37659707490",
+        appId: "1:37659707490:web:ef22a078102ce9cd0ca93b",
+        measurementId: "G-HEQ098XY8L"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -41,7 +41,23 @@ document.addEventListener("DOMContentLoaded", function () {
         loginModal.show();
     }
 
+    function userProfile(){
+        window.location.href="./pages/dashboard.html"
+    }
+
+    // function openChannel(){
+    //     window.location.href="./pages/channels.html"
+    // }
+    function openChannel(){
+        alert("This feature is in progress and will be updated soon.")
+    }
+    function bellIcon(){
+        alert("This feature is in progress and will be updated soon.")
+    }
+    window.bellIcon=bellIcon
     // Attach functions to the window object to make them globally accessible
+    window.openChannel = openChannel
+    window.userProfile = userProfile
     window.openLoginModal = openLoginModal;
     window.toggleToSignup = toggleToSignup;
     window.toggleToLogin = toggleToLogin;
@@ -51,46 +67,36 @@ document.addEventListener("DOMContentLoaded", function () {
         if (user) {
             // User is signed in
             console.log("User signed in:", user);
-    
+
             // Show the "Ask Question" section when user is logged in
-            document.getElementById("askSection").style.display = "block";
-    
+        
+
             // Hide the login button and show the bell and person icon
+            document.getElementById("channelIcon").style.display = "inline-block"
             document.getElementById("loginBtn").style.display = "none";
             document.getElementById("bellIcon").style.display = "inline-block";
             document.getElementById("personIcon").style.display = "inline-block";
         } else {
             // User is signed out
             console.log("User signed out");
-    
+
             // Hide the "Ask Question" section when user is logged out
-            document.getElementById("askSection").style.display = "none";
-    
+          
+
             // Show the login button and hide the bell and person icon
+            document.getElementById("channelIcon").style.display = "none"
             document.getElementById("loginBtn").style.display = "inline-block";
             document.getElementById("bellIcon").style.display = "none";
             document.getElementById("personIcon").style.display = "none";
         }
     });
-    
 
-    // Real-time Validation for Login Form
-    document.getElementById("loginEmail").addEventListener("input", function () {
-        const email = this.value;
-        const emailError = document.getElementById("loginEmailError");
-
-        if (!/^[a-z0-9]+@[a-z]+\.[a-z]{2,3}$/.test(email)) {
-            emailError.textContent = "Please enter a valid email address.";
-        } else {
-            emailError.textContent = "";
-        }
-    });
-
-    // Real-time Validation for Signup Form
-    document.getElementById("signupUsername").addEventListener("input", function () {
+    // Real-time Validation for Signup Form (Username)
+    document.getElementById("signupUsername").addEventListener("input", async function () {
         const username = this.value;
         const usernameError = document.getElementById("signupUsernameError");
 
+        // Validate username format
         if (username.includes(" ")) {
             usernameError.textContent = "Username cannot contain spaces.";
         } else if (/[^a-z]/.test(username)) {
@@ -98,10 +104,20 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (username.length < 3) {
             usernameError.textContent = "Username must be at least 3 characters long.";
         } else {
-            usernameError.textContent = "";
+            // Check if the username is already taken by querying Firestore
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("username", "==", username));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                usernameError.textContent = "Username is already taken.";
+            } else {
+                usernameError.textContent = "";
+            }
         }
     });
 
+    // Real-time Validation for Signup Form (Email)
     document.getElementById("signupEmail").addEventListener("input", function () {
         const email = this.value;
         const emailError = document.getElementById("signupEmailError");
@@ -113,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // Real-time Validation for Signup Form (Password)
     document.getElementById("signupPassword").addEventListener("input", function () {
         const password = this.value;
         const passwordError = document.getElementById("signupPasswordError");
@@ -134,39 +151,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Handle Form Submission for Login
-    const loginForm = document.getElementById("loginForm");
-    loginForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        const email = document.getElementById("loginEmail").value;
-        const password = document.getElementById("loginPassword").value;
-
-        const emailError = document.getElementById("loginEmailError").textContent;
-
-        if (emailError) {
-            alert("Please correct the errors before submitting.");
-        } else {
-            // Firebase Login
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    alert("Login Successful!");
-                    loginModal.hide();
-
-                    // Hide login button and show the bell and person icon
-                    document.getElementById("loginBtn").style.display = "none";
-                    document.getElementById("bellIcon").style.display = "inline-block";
-                    document.getElementById("personIcon").style.display = "inline-block";
-                })
-                .catch((error) => {
-                    alert("Error: " + error.message);
-                });
-        }
-    });
-
     // Handle Form Submission for Signup
     const signupForm = document.getElementById("signupForm");
-    signupForm.addEventListener("submit", function (e) {
+    signupForm.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const username = document.getElementById("signupUsername").value;
@@ -177,6 +164,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const emailError = document.getElementById("signupEmailError").textContent;
         const passwordError = document.getElementById("signupPasswordError").textContent;
 
+        // Check if there are any errors
         if (usernameError || emailError || passwordError) {
             alert("Please correct the errors before submitting.");
         } else {
@@ -204,6 +192,36 @@ document.addEventListener("DOMContentLoaded", function () {
                     .catch((error) => {
                         alert("Error saving user data: " + error.message);
                     });
+                })
+                .catch((error) => {
+                    alert("Error: " + error.message);
+                });
+        }
+    });
+
+    // Handle Form Submission for Login
+    const loginForm = document.getElementById("loginForm");
+    loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById("loginEmail").value;
+        const password = document.getElementById("loginPassword").value;
+
+        const emailError = document.getElementById("loginEmailError").textContent;
+
+        if (emailError) {
+            alert("Please correct the errors before submitting.");
+        } else {
+            // Firebase Login
+            signInWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    alert("Login Successful!");
+                    loginModal.hide();
+
+                    // Hide login button and show the bell and person icon
+                    document.getElementById("loginBtn").style.display = "none";
+                    document.getElementById("bellIcon").style.display = "inline-block";
+                    document.getElementById("personIcon").style.display = "inline-block";
                 })
                 .catch((error) => {
                     alert("Error: " + error.message);
@@ -245,4 +263,3 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
-

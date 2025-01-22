@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="../assests/css/theme.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* Fullscreen Modal Style */
+        #questionsModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none; /* Hidden by default */
+        }
+
+        #questionsModal .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #closeModalBtn {
+            margin: 10px 0;
+            display: inline-block;
+        }
+
+        #closeMyQuestionsBtn {
+            border: none;
+            background: none;
+            font-size: 1.5rem;
+            color: #888;
+            position: absolute;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        /* Profile picture container styling */
+        #profilePicture {
+            width: 120px;
+            height: 120px;
+            background-color: #aaa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        #profileInitial {
+            font-size: 2rem;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="d-flex min-vh-100">
+        <div class="bg-dark text-white d-flex flex-column align-items-center p-4" style="width: 300px;">
+            <!-- Profile Picture (Initially blank) -->
+            <div id="profilePicture" class="rounded-circle mb-3 border border-white d-flex justify-content-center align-items-center">
+                <span id="profileInitial" class="fs-4 text-white"></span>
+            </div>
+            <h2 id="username" class="fs-4">User Name</h2>
+            <p id="userHandle" class="text-secondary">@username</p>
+            <div class="w-100">
+                <a href="#" class="btn btn-secondary w-100 my-2" id="dashboardBtn">Recent Questions</a>
+                <a href="#" class="btn btn-secondary w-100 my-2" id="myQuestionsBtn">My Questions</a>
+                <!-- <a href="#" class="btn btn-secondary w-100 my-2" id="settingsBtn">Settings</a> -->
+                <a id="logoutBtn" href="#" class="btn btn-danger w-100 my-2">Logout</a>
+            </div>
+        </div>
+        <div class="flex-grow-1 p-4">
+            <div class="bg-white rounded shadow-sm p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 id="pageTitle">Welcome, <span id="profileName">User Name</span></h3>
+                    <div class="d-flex gap-4">
+                        <div class="text-center">
+                            <h4 id="questionsCount" class="text-primary mb-0">0</h4>
+                            <p class="text-muted mb-0">Questions</p>
+                        </div>
+                        <div class="text-center">
+                            <h4 id="answersCount" class="text-primary mb-0">0</h4>
+                            <p class="text-muted mb-0">Answers</p>
+                        </div>
+                        <div class="text-center">
+                            <h4 id="likesCount" class="text-primary mb-0">0</h4>
+                            <p class="text-muted mb-0">Likes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Recent Questions Section (initially visible) -->
+            <div id="recentQuestionsContainer">
+                <h4 class="mb-3">Recent Questions</h4>
+                <div id="recentQuestions"></div>
+            </div>
+
+            <!-- My Questions Section (hidden by default) -->
+            <div id="myQuestionsContainer" class="d-none">
+                <h4 class="mb-3">My Questions</h4>
+                <div id="myQuestions"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsSection" class="d-none">
+        <!-- Other settings fields like username, email, password... -->
+        <input type="text" id="newUsername" placeholder="New Username">
+        <input type="email" id="newEmail" placeholder="New Email">
+        <input type="password" id="newPassword" placeholder="New Password">
+        
+        <!-- Delete Account button -->
+        <button id="deleteAccountBtn" style="display:none;">Delete Account</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js" type="module"></script>
+    <script src="../scripts/dashboard.js" type="module"></script>
+</body>
+</html>

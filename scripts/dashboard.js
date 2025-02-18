@@ -128,25 +128,25 @@ async function loadUserStats(userId) {
     });
     questionsCountElement.textContent = questionsCount;
 
-    const answersRef = collection(db, "answers");
-    const answersQuery = query(answersRef, where("user_id", "==", userId));
-    const answersSnapshot = await getDocs(answersQuery);
+    // const answersRef = collection(db, "answers");
+    // const answersQuery = query(answersRef, where("user_id", "==", userId));
+    // const answersSnapshot = await getDocs(answersQuery);
 
-    let answersCount = 0;
-    answersSnapshot.forEach(() => {
-        answersCount++;
-    });
-    answersCountElement.textContent = answersCount;
+    // let answersCount = 0;
+    // answersSnapshot.forEach(() => {
+    //     answersCount++;
+    // });
+    // answersCountElement.textContent = answersCount;
 
-    const likesRef = collection(db, "likes");
-    const likesQuery = query(likesRef, where("user_id", "==", userId));
-    const likesSnapshot = await getDocs(likesQuery);
+    // const likesRef = collection(db, "likes");
+    // const likesQuery = query(likesRef, where("user_id", "==", userId));
+    // const likesSnapshot = await getDocs(likesQuery);
 
-    let likesCount = 0;
-    likesSnapshot.forEach(() => {
-        likesCount++;
-    });
-    likesCountElement.textContent = likesCount;
+    // let likesCount = 0;
+    // likesSnapshot.forEach(() => {
+    //     likesCount++;
+    // });
+    // likesCountElement.textContent = likesCount;
 }
 
 async function loadRecentQuestions(userId) {

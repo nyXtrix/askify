@@ -2,7 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebas
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBQHh2-bc-PqCgxnxSz5ea9XD8WKUFmI60",
     authDomain: "askify-4424d.firebaseapp.com",
@@ -13,12 +12,10 @@ const firebaseConfig = {
     measurementId: "G-HEQ098XY8L",
 };
 
-// Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// DOM elements
 const usernameElement = document.getElementById('username');
 const userHandleElement = document.getElementById('userHandle');
 const profileNameElement = document.getElementById('profileName');
@@ -39,7 +36,7 @@ const logoutButton = document.getElementById('logoutBtn');
 const myQuestionsBtn = document.getElementById('myQuestionsBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const pageTitle = document.getElementById('pageTitle');
-const dashboardButton = document.getElementById('dashboardBtn'); // Dashboard button
+const dashboardButton = document.getElementById('dashboardBtn'); 
 const overlay = document.createElement('div');
 overlay.id = 'overlay';
 overlay.style.display = 'none';
@@ -52,7 +49,6 @@ overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
 overlay.style.zIndex = '9998';
 document.body.appendChild(overlay);
 
-// Event listener for the "X" button (close My Questions section)
 const createCloseButton = () => {
     const closeBtn = document.createElement('button');
     closeBtn.classList.add('close-btn');
@@ -65,55 +61,48 @@ const createCloseButton = () => {
     closeBtn.style.backgroundColor = 'transparent';
     closeBtn.style.cursor = 'pointer';
     closeBtn.addEventListener('click', () => {
-        myQuestionsContainer.classList.add('d-none'); // Hide My Questions section
-        recentQuestionsContainer.classList.remove('d-none'); // Show Recent Questions section
+        myQuestionsContainer.classList.add('d-none'); 
+        recentQuestionsContainer.classList.remove('d-none');
     });
     return closeBtn;
 }
 
-// Listen for auth state changes
+
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log("User signed in:", user);
         await loadUserData(user);
     } else {
         console.log("No user signed in.");
-        window.location.href = 'login.html'; // Redirect to login page
+        window.location.href = './index.html'; 
     }
 });
 
-// Fetch user data from Firestore
 async function loadUserData(user) {
     const userId = user.uid;
-    // Fetch user profile info
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
         const userData = userSnap.data();
         console.log("Fetched user data:", userData);
-        usernameElement.textContent = userData.username || 'User Name';
+        usernameElement.textContent = `@${userData.username}` || 'User Name';
         userHandleElement.textContent = `@${userData.username}` || '@username';
         profileNameElement.textContent = userData.username || 'User Name';
 
-        // Call updateProfilePicture to display profile picture or initial
-        updateProfilePicture(userData.username); // Passing username to display initial or image
+        updateProfilePicture(userData.username); 
     } else {
         console.log("User not found:", userId);
     }
 
-    // Fetch user statistics (questions, answers, likes)
     await loadUserStats(userId);
-
-    // Fetch and display recent questions (limited to 10)
     await loadRecentQuestions(userId);
 }
 
-// Update profile picture or initial
 function updateProfilePicture(username) {
     const profilePictureElement = document.getElementById('profilePicture');
     const profileInitialElement = document.getElementById('profileInitial');
-    const profileImageUrl = ''; // If you have an image URL from Firestore or Firebase Storage, replace this with it.
+    const profileImageUrl = ''; 
 
     if (profileImageUrl) {
         profilePictureElement.style.backgroundImage = `url(${profileImageUrl})`;
@@ -128,7 +117,6 @@ function updateProfilePicture(username) {
     }
 }
 
-// Fetch user statistics (questions, answers, likes)
 async function loadUserStats(userId) {
     const questionsRef = collection(db, "questions");
     const q = query(questionsRef, where("user_id", "==", userId));
@@ -161,21 +149,19 @@ async function loadUserStats(userId) {
     likesCountElement.textContent = likesCount;
 }
 
-// Fetch and display recent questions (limited to 10)
 async function loadRecentQuestions(userId) {
     const questionsRef = collection(db, "questions");
 
-    // Query to fetch questions by user_id, ordered by post_time in descending order (most recent first)
     const q = query(
         questionsRef,
         where("user_id", "==", userId),
-        orderBy("post_time", "desc"), // Order by 'post_time' field in descending order
-        limit(8) // Limit to 10 most recent questions
+        orderBy("post_time", "desc"), 
+        limit(8)
     );
 
     try {
         const querySnapshot = await getDocs(q);
-        recentQuestionsElement.innerHTML = ''; // Clear previous questions
+        recentQuestionsElement.innerHTML = '';
 
         if (querySnapshot.empty) {
             recentQuestionsElement.innerHTML = "<p>No recent questions to show.</p>";
@@ -185,8 +171,8 @@ async function loadRecentQuestions(userId) {
             const question = doc.data();
             const questionElement = document.createElement('div');
             questionElement.classList.add('bg-white', 'rounded', 'shadow-sm', 'p-3', 'mb-4');
-            questionElement.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
+            questionElement.innerHTML = 
+                `<div class="d-flex justify-content-between align-items-center">
                     <a href="#" class="text-decoration-none text-primary fw-bold">${question.question_content}</a>
                     <span class="text-muted small">${question.likes || 0} likes</span>
                 </div>
@@ -198,57 +184,50 @@ async function loadRecentQuestions(userId) {
     }
 }
 
-// Show recent questions when the "My Questions" button is clicked
+
 myQuestionsBtn.addEventListener('click', () => {
-    pageTitle.textContent = "My Questions"; // Change the header
-    recentQuestionsContainer.classList.add('d-none'); // Hide recent questions
-    myQuestionsContainer.classList.remove('d-none'); // Show my questions section
-    settingsSection.classList.add('d-none'); // Hide settings section
-    loadUserQuestions(); // Load user's questions
+    pageTitle.textContent = "My Questions";
+    recentQuestionsContainer.classList.add('d-none'); 
+    myQuestionsContainer.classList.remove('d-none'); 
+    settingsSection.classList.add('d-none'); 
+    loadUserQuestions(); 
 });
 
 // Show settings section when the "Settings" button is clicked
-settingsBtn.addEventListener('click', () => {
-    settingsSection.classList.remove('d-none'); // Show settings section
-    overlay.style.display = 'block'; // Show overlay
+// settingsBtn.addEventListener('click', () => {
+//     settingsSection.classList.remove('d-none'); // Show settings section
+//     overlay.style.display = 'block'; // Show overlay
 
-    // Hide other sections
-    recentQuestionsContainer.classList.add('d-none');
-    myQuestionsContainer.classList.add('d-none');
-});
+//     // Hide other sections
+//     recentQuestionsContainer.classList.add('d-none');
+//     myQuestionsContainer.classList.add('d-none');
+// });
 
-// Handle the "Delete Account" button click
+
 deleteAccountBtn.addEventListener('click', async () => {
     const user = auth.currentUser;
 
     if (user) {
         try {
-            // Perform the delete account logic (example: delete from Firestore, sign out the user, etc.)
             const userRef = doc(db, "users", user.uid);
-            await deleteDoc(userRef); // Deleting user data from Firestore
-            await signOut(auth); // Sign out the user
+            await deleteDoc(userRef); 
+            await signOut(auth); 
             console.log("Account deleted and user signed out.");
-            window.location.href = 'login.html'; // Redirect to login page
+            window.location.href = '../index.html'; 
         } catch (error) {
             console.error("Error deleting account:", error);
         }
     }
 });
 
-// Handle logout with confirmation
 logoutButton.addEventListener('click', async () => {
-    // Show confirmation dialog
     const isConfirmed = window.confirm("Are you sure you want to log out?");
-    
-    // If the user clicks "OK" (i.e., isConfirmed is true), proceed with logout
     if (isConfirmed) {
         await signOut(auth);
-        window.location.href = '../index.html'; // Redirect to login page after logout
+        window.location.href = '../index.html'; 
     }
-    // If the user clicks "Cancel", do nothing
 });
 
-// Load and display user questions with comments and like count
 async function loadUserQuestions() {
     const user = auth.currentUser;
     if (user) {
@@ -259,7 +238,7 @@ async function loadUserQuestions() {
 
         const querySnapshot = await getDocs(q);
 
-        myQuestionsElement.innerHTML = ''; // Clear previous questions
+        myQuestionsElement.innerHTML = ''; 
 
         if (querySnapshot.empty) {
             myQuestionsElement.innerHTML = "<p>You have not asked any questions yet.</p>";
@@ -268,36 +247,32 @@ async function loadUserQuestions() {
                 const question = doc.data();
                 const questionId = doc.id;
 
-                // Get the likes count for this question
                 const likesRef = collection(db, "likes");
                 const likesQuery = query(likesRef, where("question_id", "==", questionId));
                 const likesSnapshot = await getDocs(likesQuery);
-                const likeCount = likesSnapshot.size;
+                const likeCount = likesSnapshot.size; 
 
-                // Get the comments for this question
                 const commentsRef = collection(db, "comments");
                 const commentsQuery = query(commentsRef, where("question_id", "==", questionId));
                 const commentsSnapshot = await getDocs(commentsQuery);
 
-                // Map through the comments and ensure 'content' exists
                 const comments = commentsSnapshot.docs.map(doc => {
                     const commentData = doc.data();
-                    return commentData.content || "No content available"; // Use "content" instead of "comment_content"
+                    return commentData.content || "No content available";
                 });
 
                 const questionElement = document.createElement('div');
                 questionElement.classList.add('bg-white', 'rounded', 'shadow-sm', 'p-3', 'mb-4');
-                questionElement.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center">
+                questionElement.innerHTML = 
+                    `<div class="d-flex justify-content-between align-items-center">
                         <a href="#" class="text-decoration-none text-primary fw-bold">${question.question_content}</a>
-                        <span class="text-muted small">${likeCount} likes</span>
+                        <span class="text-muted small">${likeCount} likes</span> <!-- Displaying likes count -->
                     </div>
                 `;
 
-                // Display comments if available
                 if (comments.length > 0) {
-                    questionElement.innerHTML += `
-                        <div class="mt-2">
+                    questionElement.innerHTML += 
+                        `<div class="mt-2">
                             <strong>Comments:</strong>
                             <ul>
                                 ${comments.map(comment => `<li>${comment}</li>`).join('')}
@@ -305,19 +280,17 @@ async function loadUserQuestions() {
                         </div>
                     `;
                 } else {
-                    // Display if no comments are available
-                    questionElement.innerHTML += `
-                        <div class="mt-2">
+                    questionElement.innerHTML += 
+                        `<div class="mt-2">
                             <strong>Comments:</strong>
                             <p>No comments yet.</p>
                         </div>
                     `;
                 }
 
-                // Add the close button above the first question card
                 if (index === 0) {
                     const closeButton = createCloseButton();
-                    questionElement.prepend(closeButton); // Add the "X" button before the first question card
+                    questionElement.prepend(closeButton); 
                 }
 
                 myQuestionsElement.appendChild(questionElement);
@@ -326,19 +299,16 @@ async function loadUserQuestions() {
     }
 }
 
-// Show recent questions when the "Dashboard" button is clicked
 dashboardButton.addEventListener('click', () => {
-    pageTitle.textContent = "Recent Questions"; // Change the page title to "Recent Questions"
-    recentQuestionsContainer.classList.remove('d-none'); // Show recent questions
-    myQuestionsContainer.classList.add('d-none'); // Hide my questions section
-    settingsSection.classList.add('d-none'); // Hide settings section
-    overlay.style.display = 'none'; // Hide overlay if settings are open
-    loadRecentQuestions(auth.currentUser.uid); // Reload recent questions
+    pageTitle.textContent = "Recent Questions"; 
+    recentQuestionsContainer.classList.remove('d-none'); 
+    myQuestionsContainer.classList.add('d-none'); 
+    settingsSection.classList.add('d-none'); 
+    overlay.style.display = 'none';
+    loadRecentQuestions(auth.currentUser.uid);
 });
-
-// Close settings when overlay is clicked
 overlay.addEventListener('click', () => {
-    settingsSection.classList.add('d-none'); // Hide settings section
-    overlay.style.display = 'none'; // Hide overlay
-    recentQuestionsContainer.classList.remove('d-none'); // Show recent questions again
+    settingsSection.classList.add('d-none'); 
+    overlay.style.display = 'none'; 
+    recentQuestionsContainer.classList.remove('d-none');
 });

@@ -3,7 +3,6 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, on
 import { getFirestore, doc, setDoc, serverTimestamp, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Initialize Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyBQHh2-bc-PqCgxnxSz5ea9XD8WKUFmI60",
         authDomain: "askify-4424d.firebaseapp.com",
@@ -18,19 +17,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Initialize Bootstrap modals after the page has loaded
     const loginModalElement = document.getElementById("loginModal");
     const signupModalElement = document.getElementById("signupModal");
 
     const loginModal = new bootstrap.Modal(loginModalElement);
     const signupModal = new bootstrap.Modal(signupModalElement);
 
-    // Function to open the Login Modal
     function openLoginModal() {
         loginModal.show();
     }
 
-    // Function to toggle between Login and Signup Modals
     function toggleToSignup() {
         loginModal.hide();
         signupModal.show();
@@ -51,52 +47,34 @@ document.addEventListener("DOMContentLoaded", function () {
     function openChannel(){
         alert("This feature is in progress and will be updated soon.")
     }
-    function bellIcon(){
-        alert("This feature is in progress and will be updated soon.")
-    }
-    window.bellIcon=bellIcon
-    // Attach functions to the window object to make them globally accessible
+    // function bellIcon(){
+    //     alert("This feature is in progress and will be updated soon.")
+    // }
+
     window.openChannel = openChannel
     window.userProfile = userProfile
     window.openLoginModal = openLoginModal;
     window.toggleToSignup = toggleToSignup;
     window.toggleToLogin = toggleToLogin;
 
-    // Handle Authentication State
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            // User is signed in
             console.log("User signed in:", user);
-
-            // Show the "Ask Question" section when user is logged in
-        
-
-            // Hide the login button and show the bell and person icon
-            document.getElementById("channelIcon").style.display = "inline-block"
+            // document.getElementById("channelIcon").style.display = "inline-block"
             document.getElementById("loginBtn").style.display = "none";
-            document.getElementById("bellIcon").style.display = "inline-block";
+            // document.getElementById("bellIcon").style.display = "inline-block";
             document.getElementById("personIcon").style.display = "inline-block";
         } else {
-            // User is signed out
             console.log("User signed out");
-
-            // Hide the "Ask Question" section when user is logged out
-          
-
-            // Show the login button and hide the bell and person icon
             document.getElementById("channelIcon").style.display = "none"
             document.getElementById("loginBtn").style.display = "inline-block";
             document.getElementById("bellIcon").style.display = "none";
             document.getElementById("personIcon").style.display = "none";
         }
     });
-
-    // Real-time Validation for Signup Form (Username)
     document.getElementById("signupUsername").addEventListener("input", async function () {
         const username = this.value;
         const usernameError = document.getElementById("signupUsernameError");
-
-        // Validate username format
         if (username.includes(" ")) {
             usernameError.textContent = "Username cannot contain spaces.";
         } else if (/[^a-z]/.test(username)) {
@@ -104,7 +82,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (username.length < 3) {
             usernameError.textContent = "Username must be at least 3 characters long.";
         } else {
-            // Check if the username is already taken by querying Firestore
             const usersRef = collection(db, "users");
             const q = query(usersRef, where("username", "==", username));
             const querySnapshot = await getDocs(q);
@@ -117,7 +94,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Real-time Validation for Signup Form (Email)
     document.getElementById("signupEmail").addEventListener("input", function () {
         const email = this.value;
         const emailError = document.getElementById("signupEmailError");
@@ -128,8 +104,6 @@ document.addEventListener("DOMContentLoaded", function () {
             emailError.textContent = "";
         }
     });
-
-    // Real-time Validation for Signup Form (Password)
     document.getElementById("signupPassword").addEventListener("input", function () {
         const password = this.value;
         const passwordError = document.getElementById("signupPasswordError");
@@ -164,16 +138,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const emailError = document.getElementById("signupEmailError").textContent;
         const passwordError = document.getElementById("signupPasswordError").textContent;
 
-        // Check if there are any errors
         if (usernameError || emailError || passwordError) {
             alert("Please correct the errors before submitting.");
         } else {
-            // Firebase Sign Up
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
-
-                    // Add user data to Firestore
                     const userDocRef = doc(db, "users", user.uid);
                     setDoc(userDocRef, {
                         username: username,
@@ -183,8 +153,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     .then(() => {
                         alert("Signup Successful!");
                         signupModal.hide();
-
-                        // Hide login button and show the bell and person icon
                         document.getElementById("loginBtn").style.display = "none";
                         document.getElementById("bellIcon").style.display = "inline-block";
                         document.getElementById("personIcon").style.display = "inline-block";
@@ -198,8 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         }
     });
-
-    // Handle Form Submission for Login
     const loginForm = document.getElementById("loginForm");
     loginForm.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -212,13 +178,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (emailError) {
             alert("Please correct the errors before submitting.");
         } else {
-            // Firebase Login
             signInWithEmailAndPassword(auth, email, password)
                 .then(() => {
                     alert("Login Successful!");
                     loginModal.hide();
 
-                    // Hide login button and show the bell and person icon
                     document.getElementById("loginBtn").style.display = "none";
                     document.getElementById("bellIcon").style.display = "inline-block";
                     document.getElementById("personIcon").style.display = "inline-block";
@@ -229,7 +193,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Toggle Password Visibility for Login and Signup
     const loginPassword = document.getElementById("loginPassword");
     const signupPassword = document.getElementById("signupPassword");
     const toggleLoginPassword = document.getElementById("toggleLoginPassword");
@@ -237,7 +200,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const eyeIconLogin = document.getElementById("eyeIconLogin");
     const eyeIconSignup = document.getElementById("eyeIconSignup");
 
-    // Toggle password visibility for login
     toggleLoginPassword.addEventListener("click", function () {
         if (loginPassword.type === "password") {
             loginPassword.type = "text";
@@ -250,7 +212,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Toggle password visibility for signup
     toggleSignupPassword.addEventListener("click", function () {
         if (signupPassword.type === "password") {
             signupPassword.type = "text";

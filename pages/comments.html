@@ -70,25 +70,47 @@
         #postCommentButton {
             width: 100%;
         }
+        .d-none {
+    display: none;
+}
+
+.more-options-menu {
+    display: block;
+    background-color: white;
+    border: 1px solid #ccc; 
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 8px 0;
+    z-index: 10; 
+    position: absolute; 
+    min-width: 100px;
+}
+
+.more-options-menu button {
+    width: 100%;
+    padding: 8px;
+    text-align: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.more-options-menu button:hover {
+    background-color: #f0f0f0; 
+}
+
+
     </style>
 </head>
 <body>
     <div class="container mt-5">
-        <!-- Question Section -->
         <h2 class="section-heading">Question</h2>
         <div id="questionDetails">
-           
-            <!-- The question will be dynamically inserted here -->
         </div>
 
-        <!-- Comments Section -->
         <h3 class="section-heading">Comments</h3>
         <div id="commentsList">
-         
-            <!-- The comments will be dynamically inserted here -->
         </div>
-
-        <!-- Add Comment Section (Visible only when user is logged in) -->
         <div id="addCommentSection" class="d-none mb-4">
             <textarea id="commentInput" class="form-control" rows="4" placeholder="Write a comment..."></textarea>
             <button id="postCommentButton" class="btn btn-primary mt-2">Post Comment</button>

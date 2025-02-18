@@ -2,7 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebas
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, addDoc, updateDoc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// Firebase config
 const firebaseConfig = {
     apiKey: "AIzaSyBQHh2-bc-PqCgxnxSz5ea9XD8WKUFmI60",
     authDomain: "askify-4424d.firebaseapp.com",
@@ -13,23 +12,19 @@ const firebaseConfig = {
     measurementId: "G-HEQ098XY8L"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Get questionId from URL
 const urlParams = new URLSearchParams(window.location.search);
 const questionId = urlParams.get("questionId");
 
-// DOM elements
 const questionDetailsDiv = document.getElementById("questionDetails");
 const commentsListDiv = document.getElementById("commentsList");
 const addCommentSection = document.getElementById("addCommentSection");
 const commentInput = document.getElementById("commentInput");
 const postCommentButton = document.getElementById("postCommentButton");
 
-// Fetch question details
 async function loadQuestionDetails() {
     try {
         const questionRef = doc(db, "questions", questionId);
@@ -37,13 +32,9 @@ async function loadQuestionDetails() {
 
         if (questionSnap.exists()) {
             const questionData = questionSnap.data();
-
-            // Fetch username of the person who posted the question
             const userRef = doc(db, "users", questionData.user_id);
             const userSnap = await getDoc(userRef);
             const username = userSnap.exists() ? userSnap.data().username : "Unknown User";
-
-            // Add description if it exists
             let descriptionHTML = "";
             if (questionData.description_content) {
                 descriptionHTML = `<p><strong>Description:</strong> ${questionData.description_content}</p>`;
@@ -51,7 +42,7 @@ async function loadQuestionDetails() {
 
             questionDetailsDiv.innerHTML = `
                 <div class="question border p-3 rounded">
-                    <p><strong>Asked by: </strong>${username}</p>
+                    <p><strong>Asked by: </strong><strong style="color:#3083fd">@${username}</strong></p>
                     <p class="question-content mb-2"><strong>Question: </strong>${questionData.question_content}</p>
                     ${descriptionHTML} <!-- Add description if available -->
                     <div class="d-flex justify-content-between">
@@ -68,7 +59,6 @@ async function loadQuestionDetails() {
     }
 }
 
-// Load comments
 function loadComments() {
     const commentsQuery = query(collection(db, "comments"), where("question_id", "==", questionId));
 
@@ -80,7 +70,6 @@ function loadComments() {
             const commentId = commentDoc.id;
 
             try {
-                // Fetch username for the comment
                 const userRef = doc(db, "users", commentData.user_id);
                 const userSnap = await getDoc(userRef);
                 const username = userSnap.exists() ? userSnap.data().username : "Unknown User";
@@ -90,59 +79,69 @@ function loadComments() {
 
                 commentElement.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="username">${username}</span>
-                        <button class="btn p-0 border-0 like-btn text-muted" data-comment-id="${commentId}">
-                            <i class="bi bi-heart fs-6"></i> <span>${commentData.likes || 0}</span>
+                        <span class="username">@${username}</span>
+                        <button class="btn p-0 border-0 more-options-btn text-muted" data-comment-id="${commentId}">
+                            <i class="bi bi-three-dots-vertical"></i>
                         </button>
                     </div>
                     <p class="comment-content">${commentData.content}</p>
+                    <div class="more-options-menu d-none" data-comment-id="${commentId}">
+                        <button class="btn p-0 border-0 delete-btn ">Delete</button>
+                        <button class="btn p-0 border-0 report-btn ">Report</button>
+                    </div>
                 `;
 
                 commentsListDiv.appendChild(commentElement);
 
-                // Handle like button for each comment
-                const likeButton = commentElement.querySelector(".like-btn");
-                const likeCountSpan = likeButton.querySelector("span");
+                const moreOptionsButton = commentElement.querySelector(".more-options-btn");
+                const moreOptionsMenu = commentElement.querySelector(".more-options-menu");
+                const deleteButton = commentElement.querySelector(".delete-btn");
+                const reportButton = commentElement.querySelector(".report-btn");
 
-                likeButton.addEventListener("click", async () => {
-                    const userId = auth.currentUser?.uid;
-                    if (!userId) {
-                        alert("You must be logged in to like comments.");
-                        return;
-                    }
-
-                    try {
-                        const likeRef = doc(db, "likes", `${commentId}_${userId}`);
-                        const likeSnap = await getDoc(likeRef);
-
-                        if (likeSnap.exists()) {
-                            // Unlike the comment
-                            await deleteDoc(likeRef);
-
-                            likeButton.querySelector("i").classList.remove("text-danger");
-                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1;
-
-                            await updateDoc(doc(db, "comments", commentId), {
-                                likes: increment(-1),
-                            });
-                        } else {
-                            // Like the comment
-                            await addDoc(likeRef, {
-                                user_id: userId,
-                                comment_id: commentId,
-                                createdAt: new Date().toISOString(),
-                            });
-
-                            likeButton.querySelector("i").classList.add("text-danger");
-                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1;
-
-                            await updateDoc(doc(db, "comments", commentId), {
-                                likes: increment(1),
-                            });
+                moreOptionsButton.addEventListener("click", (event) => {
+                    const allMenus = document.querySelectorAll(".more-options-menu");
+                    allMenus.forEach(menu => {
+                        if (menu !== moreOptionsMenu) {
+                            menu.classList.add("d-none");
                         }
-                    } catch (error) {
-                        console.error("Error handling like:", error);
+                    });
+                    moreOptionsMenu.classList.toggle("d-none");
+
+                    const buttonRect = event.target.getBoundingClientRect();
+                    const menuHeight = moreOptionsMenu.offsetHeight;
+                    moreOptionsMenu.style.position = 'absolute';
+                    moreOptionsMenu.style.left = `${buttonRect.left}px`;
+                    moreOptionsMenu.style.top = `${buttonRect.bottom + window.scrollY}px`;
+                });
+
+                const currentUserId = auth.currentUser?.uid;
+                if (currentUserId && commentData.user_id === currentUserId) {
+                    deleteButton.style.display = "inline-block";
+                    reportButton.style.display ="none"
+                } else {
+                    deleteButton.style.display = "none"; 
+                }
+
+                deleteButton.addEventListener("click", async () => {
+                    if (commentData.user_id === currentUserId) {
+                        const isConfirmed = window.confirm("Are you sure you want to delete this comment?");
+                        
+                        if (isConfirmed) {
+                            try {
+                                await deleteDoc(doc(db, "comments", commentId));
+                                alert("Comment deleted successfully.");
+                            } catch (error) {
+                                console.error("Error deleting comment:", error);
+                                alert("There was an error deleting the comment. Please try again.");
+                            }
+                        }
+                    } else {
+                        alert("You can only delete your own comments.");
                     }
+                });
+                
+                reportButton.addEventListener("click", async () => {
+                    alert("Comment reported. We will review it shortly.");
                 });
             } catch (error) {
                 console.error("Error loading comment user data:", error);
@@ -151,7 +150,6 @@ function loadComments() {
     });
 }
 
-// Post a comment
 postCommentButton.addEventListener("click", async () => {
     const userId = auth.currentUser?.uid;
 
@@ -176,14 +174,13 @@ postCommentButton.addEventListener("click", async () => {
             createdAt: new Date().toISOString(),
         });
 
-        commentInput.value = ""; // Clear input field
+        commentInput.value = ""; 
     } catch (error) {
         console.error("Error posting comment:", error);
         alert("There was an error posting your comment. Please try again.");
     }
 });
 
-// Check auth state to enable or disable comment input
 onAuthStateChanged(auth, (user) => {
     if (user) {
         addCommentSection.classList.remove("d-none");
@@ -192,6 +189,5 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// Initialize page
 loadQuestionDetails();
 loadComments();
